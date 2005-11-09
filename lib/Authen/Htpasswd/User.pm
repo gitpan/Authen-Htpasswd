@@ -32,12 +32,12 @@ Authen::Htpasswd::User - represents a user line in a .htpasswd file
  
 =head1 METHODS
 
-=over 4
+=head2 new
 
-=item new($username, $password[, $extra_info], \%options)
+    my $userobj = Authen::Htpasswd::User->new($username, $password[, $extra_info], \%options);
 
-Creates a user object. You may also specify the arguments and options together as a hash: 
-new({ username => $foo, password => $bar, extra_info => $baz, ... }).
+Creates a user object. You may also specify the arguments and options together in a hash: 
+C<< { username => $foo, password => $bar, extra_info => $baz, ... } >>.
 
 =over 4
 
@@ -70,9 +70,11 @@ sub new {
     bless $self, $class;
 }
 
-=item check_password($password,$hashes)
+=head2 check_password
 
-Returns whether the password matches. Hashes is an array of methods, as for Authen::Htpasswd.
+    $userobj->check_password($password,\@check_hashes);
+
+Returns whether the password matches. C<check_hashes> is the same as for Authen::Htpasswd.
 
 =cut
 
@@ -85,7 +87,11 @@ sub check_password {
     return 0;
 }
 
-=item username, hashed_password, extra_info
+=head2 username
+
+=head2 hashed_password
+
+=head2 extra_info
 
 These methods get and set the three fields of the user line. If the user was looked up from an Authen::Htpasswd
 object, the changes are written immediately to the assciated file. The same goes for C<password> and C<set> below.
@@ -119,7 +125,9 @@ sub extra_info {
     return $self->{extra_info};
 }
 
-=item password($newpass)
+=head2 password
+    
+    $userobj->password($newpass);
 
 Encrypts a new password.
 
@@ -130,7 +138,9 @@ sub password {
     $self->hashed_password( htpasswd_encrypt($self->encrypt_hash, $password) );
 }
 
-=item set(item => value, ...)
+=head2 set
+
+    $userobj->set(item => $value, ...);
 
 Sets any of the four preceding values at once. Only writes the file once if it is going to be written.
 
@@ -148,9 +158,11 @@ sub set {
     $self->file->update_user($self) if $self->file;        
 }
 
-=item to_line
+=head2 to_line
 
-Returns a line for the user suitable for printing to a C<.htpasswd> file. There is no newline at the end.
+    $userobj->to_line;
+
+Returns a line for the user, suitable for printing to a C<.htpasswd> file. There is no newline at the end.
 
 =cut
 

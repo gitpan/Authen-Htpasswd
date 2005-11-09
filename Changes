@@ -1,2 +1,6 @@
+0.11
+    - implement locking with IO::LockedFile
+    - minor code and pod cleanups
+
 0.1
     - initial release
