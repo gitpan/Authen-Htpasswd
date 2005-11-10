@@ -15,7 +15,7 @@ Authen::Htpasswd::User - represents a user line in a .htpasswd file
 
 =head1 SYNOPSIS
 
-    my $user = Authen::Htpasswd::User->new($username, $password[, $extra_info], \%options);
+    my $user = Authen::Htpasswd::User->new($username, $password[, @extra_info], \%options);
     my $user = $pwfile->lookup_user($username); # from Authen::Htpasswd object
     
     if ($user->check_password($password)) { ... }
@@ -25,7 +25,7 @@ Authen::Htpasswd::User - represents a user line in a .htpasswd file
     $user->username('bill');
     $user->password('bar');
     $user->hashed_password('tIYAwma5mxexA');
-    $user->extra_info('root');
+    $user->extra_info('root', 'joe@site.com', 'Joe Sysadmin');
     $user->set(username => 'bill', password => 'foo'); # set several at once
     
     print $user->to_line, "\n";
@@ -34,10 +34,10 @@ Authen::Htpasswd::User - represents a user line in a .htpasswd file
 
 =head2 new
 
-    my $userobj = Authen::Htpasswd::User->new($username, $password[, $extra_info], \%options);
+    my $userobj = Authen::Htpasswd::User->new($username, $password[, @extra_info], \%options);
 
 Creates a user object. You may also specify the arguments and options together in a hash: 
-C<< { username => $foo, password => $bar, extra_info => $baz, ... } >>.
+C<< { username => $foo, password => $bar, extra_info => [$email, $name], ... } >>.
 
 =over 4
 
@@ -62,10 +62,11 @@ sub new {
     my $self = ref $_[-1] eq 'HASH' ? pop @_ : {};
     $self->{encrypt_hash} ||= 'crypt';
     $self->{check_hashes} ||= [qw/ md5 sha1 crypt plain /];
+    $self->{autocommit} = 1;
 
     $self->{username} = $_[0];
     $self->{hashed_password} ||= htpasswd_encrypt($self->{encrypt_hash}, $_[1]) if defined $_[1];
-    $self->{extra_info} = $_[2] if defined $_[2];
+    $self->{extra_info} = [ @_[2..$#_] ] if defined $_[2];
 
     bless $self, $class;
 }
@@ -91,18 +92,20 @@ sub check_password {
 
 =head2 hashed_password
 
-=head2 extra_info
+=head2 extra_info(@fields)
 
-These methods get and set the three fields of the user line. If the user was looked up from an Authen::Htpasswd
-object, the changes are written immediately to the assciated file. The same goes for C<password> and C<set> below.
+Get and set the fields of the user line. These methods, as well as C<password> and C<set> below, write 
+any changes immediately if the user was lookup up from an Authen::Htpasswd object. If the username is
+changed, the old entry is I<not> preserved.
 
 =cut
 
 sub username {
     my $self = shift;
     if (@_) {
+        $self->{old_username} = $self->{username} if $self->{username} ne $_[0];
         $self->{username} = shift;
-        $self->file->update_user($self) if $self->file;        
+        $self->_update if $self->{autocommit};        
     }
     return $self->{username};
 }
@@ -111,7 +114,7 @@ sub hashed_password {
     my $self = shift;
     if (@_) {
         $self->{hashed_password} = shift;
-        $self->file->update_user($self) if $self->file;        
+        $self->_update if $self->{autocommit};        
     }
     return $self->{hashed_password};
 }
@@ -119,8 +122,8 @@ sub hashed_password {
 sub extra_info {
     my $self = shift;
     if (@_) {
-        $self->{extra_info} = shift;
-        $self->file->update_user($self) if $self->file;        
+        $self->{extra_info} = [ @_ ];
+        $self->_update if $self->{autocommit};        
     }
     return $self->{extra_info};
 }
@@ -148,14 +151,13 @@ Sets any of the four preceding values at once. Only writes the file once if it i
 
 sub set {
     my ($self,%attr) = @_;
+    $self->{autocommit} = 0;
     while (my ($key,$value) = each %attr) {
-        if ($key eq 'password') {
-            $self->{hashed_password} = htpasswd_encrypt($self->encrypt_hash, $value);
-        } else {
-            $self->{$key} = $value;            
-        }
-    }
-    $self->file->update_user($self) if $self->file;        
+        croak "don't know how to set $key" unless $self->can($key);
+        $self->$key(ref $value eq 'ARRAY' ? @$value : $value);
+    }    
+    $self->_update;        
+    $self->{autocommit} = 1;
 }
 
 =head2 to_line
@@ -169,7 +171,18 @@ Returns a line for the user, suitable for printing to a C<.htpasswd> file. There
 sub to_line {
     my $self = shift;
     return join(':', $self->username, $self->hashed_password,
-        defined $self->extra_info ? $self->extra_info : ());
+        defined $self->extra_info ? @{$self->extra_info} : ());
+}
+
+sub _update {
+    my $self = shift;
+    if ($self->file) {
+        if (defined $self->{old_username}) {
+            $self->file->delete_user($self->{old_username});
+            delete $self->{old_username};            
+        }
+        $self->file->update_user($self);
+    }
 }
 
 =head1 AUTHOR

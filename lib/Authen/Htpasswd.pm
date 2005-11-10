@@ -1,11 +1,11 @@
 package Authen::Htpasswd;
 use strict;
 use base 'Class::Accessor::Fast';
-use Carp;
+use Carp qw/ croak /;
 use IO::LockedFile;
 use Authen::Htpasswd::User;
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 my $SUFFIX = '.new';
 
 __PACKAGE__->mk_accessors(qw/ file encrypt_hash check_hashes /);
@@ -39,10 +39,10 @@ Authen::Htpasswd - interface to read and modify Apache .htpasswd files
 
 =head1 DESCRIPTION
 
-This module provides a convenient, object-oriented interface to Apache-style C<.htpasswd> files.
+This module provides a convenient, object-oriented interface to Apache-style F<.htpasswd> files.
 It supports passwords encrypted via MD5, SHA1, and crypt, as well as plain (cleartext) passwords.
-It requires L<Crypt::PasswdMD5> for MD5 and L<Digest::SHA1> for SHA1. The third field of the file
-is also supported, referred to here as C<extra_info>.
+It requires L<Crypt::PasswdMD5> for MD5 and L<Digest::SHA1> for SHA1. Additional fields after
+username and password, if present, are accessible via the C<extra_info> array.
 
 =head1 METHODS
 
@@ -50,7 +50,7 @@ is also supported, referred to here as C<extra_info>.
 
     my $pwfile = Authen::Htpasswd->new($filename, \%options);
 
-Creates an object for a given C<.htpasswd> file. Options:
+Creates an object for a given F<.htpasswd> file. Options:
 
 =over 4
 
@@ -72,7 +72,11 @@ sub new {
     my $class = shift;
     my $self = ref $_[-1] eq 'HASH' ? pop @_ : {};
     $self->{file} = $_[0] if $_[0];
-    Carp::croak "no file specified" unless $self->{file};
+    croak "no file specified" unless $self->{file};
+    if (!-e $self->{file}) {
+        open my $file, '>', $self->{file} or die $!;
+        close $file or die $!;
+    }
     
     $self->{encrypt_hash} ||= 'crypt';        
     $self->{check_hashes} ||= [qw/ md5 sha1 crypt plain /];        
@@ -95,9 +99,9 @@ sub lookup_user {
     my $file = IO::LockedFile->new($self->file, 'r') or die $!;
     while (defined(my $line = <$file>)) {
         chomp $line;
-        my ($username,$hashed_password,$extra_info) = split /:/, $line;
+        my ($username,$hashed_password,@extra_info) = split /:/, $line;
         if ($username eq $search_username) {
-            return Authen::Htpasswd::User->new($username,undef,$extra_info, {
+            return Authen::Htpasswd::User->new($username,undef,@extra_info, {
                     file => $self, 
                     hashed_password => $hashed_password,
                     encrypt_hash => $self->encrypt_hash, 
@@ -113,24 +117,24 @@ sub lookup_user {
     $pwfile->check_user_password($username,$password);
 
 Returns whether the password is valid. Shortcut for 
-C<< $pwfile->lookup_user->($username)->check_password($password) >>.
+C<< $pwfile->lookup_user($username)->check_password($password) >>.
 
 =cut
 
 sub check_user_password {
     my ($self,$username,$password) = @_;
     my $user = $self->lookup_user($username);
-    Carp::croak "could not find user $username" unless $user;
+    croak "could not find user $username" unless $user;
     return $user->check_password($password);
 }
 
 =head2 update_user
     
-    $pwfile->update_user($userobj, \%options);
-    $pwfile->update_user($username, $password[, $extra_info], \%options);
+    $pwfile->update_user($userobj);
+    $pwfile->update_user($username, $password[, @extra_info], \%options);
 
 Modifies the entry for a user saves it to the file. If the user entry does not
-exist, it is created. Options are the same as for Authen::Htpasswd::User.
+exist, it is created. The options in the second form are passed to L<Authen::Htpasswd::User>.
 
 =cut
 
@@ -144,8 +148,8 @@ sub update_user {
     while (defined(my $line = <$old>)) {
         if ($line =~ /^\Q$username\:/) {
             chomp $line;
-            my (undef,undef,$extra_info) = split /:/, $line;
-            $user->{extra_info} ||= $extra_info if defined $extra_info;
+            my (undef,undef,@extra_info) = split /:/, $line;
+            $user->{extra_info} ||= [ @extra_info ] if scalar @extra_info;
             print $new $user->to_line, "\n";
             $seen++;
         } else {
@@ -158,11 +162,11 @@ sub update_user {
 
 =head2 add_user
 
-    $pwfile->add_user($userobj, \%options);
-    $pwfile->add_user($username, $password[, $extra_info], \%options);
+    $pwfile->add_user($userobj);
+    $pwfile->add_user($username, $password[, @extra_info], \%options);
 
 Adds a user entry to the file. If the user entry already exists, an exception is raised.
-Options are the same as for Authen::Htpasswd::User.
+The options in the second form are passed to L<Authen::Htpasswd::User>.
 
 =cut
 
@@ -175,7 +179,7 @@ sub add_user {
     while (defined(my $line = <$old>)) {
         if ($line =~ /^\Q$username\:/) {
             $self->_abort_rewrite;
-            Carp::croak "user $username already exists in " . $self->file . "!";
+            croak "user $username already exists in " . $self->file . "!";
         }
         print $new $line;
     }
@@ -223,7 +227,7 @@ sub _start_rewrite {
 sub _finish_rewrite {
     my ($self,$old,$new) = @_;
     $new->close or die $!;
-    rename $self->file . $SUFFIX, $self->file;
+    rename $self->file . $SUFFIX, $self->file or die $!;
     $old->close or die $!;
 }
 

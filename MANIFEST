@@ -10,5 +10,6 @@ README
 t/01use.t
 t/02pod.t
 t/03podcoverage.t
-t/04htpasswd.t
+t/04core.t
+t/05edit.t
 t/data/passwd.txt

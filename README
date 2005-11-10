@@ -25,16 +25,17 @@ SYNOPSIS
 
 DESCRIPTION
     This module provides a convenient, object-oriented interface to
-    Apache-style ".htpasswd" files. It supports passwords encrypted via MD5,
+    Apache-style .htpasswd files. It supports passwords encrypted via MD5,
     SHA1, and crypt, as well as plain (cleartext) passwords. It requires
-    Crypt::PasswdMD5 for MD5 and Digest::SHA1 for SHA1. The third field of
-    the file is also supported, referred to here as "extra_info".
+    Crypt::PasswdMD5 for MD5 and Digest::SHA1 for SHA1. Additional fields
+    after username and password, if present, are accessible via the
+    "extra_info" array.
 
 METHODS
   new
         my $pwfile = Authen::Htpasswd->new($filename, \%options);
 
-    Creates an object for a given ".htpasswd" file. Options:
+    Creates an object for a given .htpasswd file. Options:
 
     encrypt_hash
         How passwords should be encrypted if a user is added or changed.
@@ -56,22 +57,23 @@ METHODS
         $pwfile->check_user_password($username,$password);
 
     Returns whether the password is valid. Shortcut for
-    "$pwfile->lookup_user->($username)->check_password($password)".
+    "$pwfile->lookup_user($username)->check_password($password)".
 
   update_user
-        $pwfile->update_user($userobj, \%options);
-        $pwfile->update_user($username, $password[, $extra_info], \%options);
+        $pwfile->update_user($userobj);
+        $pwfile->update_user($username, $password[, @extra_info], \%options);
 
     Modifies the entry for a user saves it to the file. If the user entry
-    does not exist, it is created. Options are the same as for
-    Authen::Htpasswd::User.
+    does not exist, it is created. The options in the second form are passed
+    to Authen::Htpasswd::User.
 
   add_user
-        $pwfile->add_user($userobj, \%options);
-        $pwfile->add_user($username, $password[, $extra_info], \%options);
+        $pwfile->add_user($userobj);
+        $pwfile->add_user($username, $password[, @extra_info], \%options);
 
     Adds a user entry to the file. If the user entry already exists, an
-    exception is raised. Options are the same as for Authen::Htpasswd::User.
+    exception is raised. The options in the second form are passed to
+    Authen::Htpasswd::User.
 
   delete_user
         $pwfile->delete_user($userobj);
