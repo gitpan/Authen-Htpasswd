@@ -6,6 +6,7 @@ WriteMakefile
           'VERSION_FROM' => 'lib/Authen/Htpasswd.pm',
           'PREREQ_PM' => {
                            'Class::Accessor::Fast' => '0',
+                           'Digest' => '0',
                            'IO::LockedFile' => '0'
                          },
           'INSTALLDIRS' => 'site',

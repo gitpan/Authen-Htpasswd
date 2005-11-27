@@ -1,8 +1,23 @@
---- #YAML:1.0
+---
 name: Authen-Htpasswd
-version: 0.12
+version: 0.13
 author:
   - David Kamholz <davekam at pobox dot com>
 abstract: interface to read and modify Apache .htpasswd files
 license: perl
-generated_by: Module::Build version 0.2611, without YAML.pm
+requires:
+  Class::Accessor::Fast: 0
+  Digest: 0
+  IO::LockedFile: 0
+recommends:
+  Crypt::PasswdMD5: 0
+  Digest::SHA1: 0
+provides:
+  Authen::Htpasswd:
+    file: lib/Authen/Htpasswd.pm
+    version: 0.13
+  Authen::Htpasswd::User:
+    file: lib/Authen/Htpasswd/User.pm
+  Authen::Htpasswd::Util:
+    file: lib/Authen/Htpasswd/Util.pm
+generated_by: Module::Build version 0.2611

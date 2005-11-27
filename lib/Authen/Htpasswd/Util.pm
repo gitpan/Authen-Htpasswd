@@ -25,6 +25,15 @@ sub htpasswd_encrypt {
     return &$meth($password,$hashed_password);
 }
 
+sub _supported_hashes {
+    my @supported = qw/ crypt plain /;
+    eval { Digest->new("SHA-1") };
+    unshift @supported, 'sha1' unless $@;
+    eval { require Crypt::PasswdMD5 };
+    unshift @supported, 'md5' unless $@;
+    return @supported;    
+}
+
 sub _hash_plain {
     my ($password) = @_;
     return $password;
@@ -51,9 +60,15 @@ sub _hash_sha1 {
 
 =head1 AUTHOR
 
-David Kamholz
+David Kamholz C<dkamholz@cpan.org>
 
-davekam at pobox dot com
+Yuval Kogman
+
+=head1 COPYRIGHT & LICNESE
+
+	Copyright (c) 2005 the aforementioned authors. All rights
+	reserved. This program is free software; you can redistribute
+	it and/or modify it under the same terms as Perl itself.
 
 =cut
 

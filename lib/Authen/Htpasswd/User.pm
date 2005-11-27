@@ -61,7 +61,7 @@ sub new {
     
     my $self = ref $_[-1] eq 'HASH' ? pop @_ : {};
     $self->{encrypt_hash} ||= 'crypt';
-    $self->{check_hashes} ||= [qw/ md5 sha1 crypt plain /];
+    $self->{check_hashes} ||= [ Authen::Htpasswd::Util::_supported_hashes() ];
     $self->{autocommit} = 1;
 
     $self->{username} = $_[0];
@@ -187,9 +187,15 @@ sub _update {
 
 =head1 AUTHOR
 
-David Kamholz
+David Kamholz C<dkamholz@cpan.org>
 
-davekam at pobox dot com
+Yuval Kogman
+
+=head1 COPYRIGHT & LICNESE
+
+	Copyright (c) 2005 the aforementioned authors. All rights
+	reserved. This program is free software; you can redistribute
+	it and/or modify it under the same terms as Perl itself.
 
 =cut
 

@@ -1,10 +1,15 @@
-0.12
+0.13    Sat Nov 26 04:18:19 CET 2005
+    - works if you don't have Crypt::PasswdMD5 or Digest::SHA1
+    - auto-detects available modules for default check_hashes
+    - added Yuval Kogman as author, also added license to POD
+
+0.12    November 10 2005
 	- extra_info is now an array, as suggested by Uwe Voelker
 	- changing the username will now delete the old username and add the new one
 
-0.11
+0.11    November 09 2005
     - implement locking with IO::LockedFile
     - minor code and pod cleanups
 
-0.1
+0.10    November 09 2005
     - initial release

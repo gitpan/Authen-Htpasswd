@@ -9,12 +9,12 @@ my $build = Module::Build->new(
     module_name         => 'Authen::Htpasswd',
     requires            => {
         'Class::Accessor::Fast'     => 0,
-        'IO::LockedFile'            => 0
+        'IO::LockedFile'            => 0,
+        'Digest'                    => 0,
     },
     recommends => {
         'Crypt::PasswdMD5'  => 0, 
-        'Digest::MD5'       => 0, 
-        'Digest::SHA1'      => 0 
+        'Digest::SHA1'      => 0,
     },
 
     dist_author => 'David Kamholz <davekam at pobox dot com>',
