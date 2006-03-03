@@ -1,3 +1,6 @@
+0.14    Fri Mar 03 08:01:32 CET 2006
+    - add all_users method
+
 0.13    Sat Nov 26 04:18:19 CET 2005
     - works if you don't have Crypt::PasswdMD5 or Digest::SHA1
     - auto-detects available modules for default check_hashes

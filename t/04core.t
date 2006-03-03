@@ -1,6 +1,6 @@
 #!/perl
 
-use Test::More tests => 10;
+use Test::More tests => 13;
 
 use strict;
 use warnings;
@@ -31,3 +31,7 @@ SKIP: {
 $file->check_hashes([qw/ crypt /]);
 ok( !$file->check_user_password(qw/ joe secret /), 'correct plaintext password denied');
 
+my @users = $file->all_users;
+is( scalar @users, 4, 'returned correct number of users' );
+is( $users[0]->username, 'bob', 'first user has right name' );
+is( $users[-1]->username, 'joe', 'last user has right name' );

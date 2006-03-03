@@ -5,7 +5,7 @@ use Carp;
 use IO::LockedFile;
 use Authen::Htpasswd::User;
 
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 my $SUFFIX = '.new';
 
 __PACKAGE__->mk_accessors(qw/ file encrypt_hash check_hashes /);
@@ -82,7 +82,6 @@ sub new {
     $self->{check_hashes} ||= [ Authen::Htpasswd::Util::_supported_hashes() ];        
 
     bless $self, $class;
-    $self;
 }
 
 =head2 lookup_user
@@ -110,6 +109,30 @@ sub lookup_user {
         }
     }
     return undef;
+}
+
+=head2 all_users
+
+    my @users = $pwfile->all_users;
+
+=cut
+
+sub all_users {
+    my $self = shift;
+
+    my @users;
+    my $file = IO::LockedFile->new($self->file, 'r') or die $!;
+    while (defined(my $line = <$file>)) {
+        chomp $line;
+        my ($username,$hashed_password,@extra_info) = split /:/, $line;
+        push(@users, Authen::Htpasswd::User->new($username,undef,@extra_info, {
+                file => $self, 
+                hashed_password => $hashed_password,
+                encrypt_hash => $self->encrypt_hash, 
+                check_hashes => $self->check_hashes 
+            }));
+    }
+    return @users;
 }
 
 =head2 check_user_password
@@ -248,7 +271,7 @@ Yuval Kogman
 
 L<Apache::Htpasswd>.
 
-=head1 COPYRIGHT & LICNESE
+=head1 COPYRIGHT & LICENSE
 
 	Copyright (c) 2005 the aforementioned authors. All rights
 	reserved. This program is free software; you can redistribute

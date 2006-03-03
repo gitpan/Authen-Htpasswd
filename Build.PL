@@ -17,6 +17,6 @@ my $build = Module::Build->new(
         'Digest::SHA1'      => 0,
     },
 
-    dist_author => 'David Kamholz <davekam at pobox dot com>',
+    dist_author => 'David Kamholz <dkamholz@cpan.org>',
 );
 $build->create_build_script;

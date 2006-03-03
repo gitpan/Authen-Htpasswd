@@ -18,6 +18,10 @@ Authen::Htpasswd::Util - performs encryption of supported .htpasswd formats
 
 =cut
 
+=head2 htpasswd_encrypt
+
+=cut
+
 sub htpasswd_encrypt {
     my ($hash,$password,$hashed_password) = @_;
     my $meth = __PACKAGE__->can("_hash_$hash");
@@ -64,7 +68,7 @@ David Kamholz C<dkamholz@cpan.org>
 
 Yuval Kogman
 
-=head1 COPYRIGHT & LICNESE
+=head1 COPYRIGHT & LICENSE
 
 	Copyright (c) 2005 the aforementioned authors. All rights
 	reserved. This program is free software; you can redistribute

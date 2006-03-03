@@ -57,7 +57,7 @@ Explicitly sets the value of the hashed password, rather than generating it with
 
 sub new {
     my $class = shift;
-    Carp::croak "not enough arguments" if @_ < 2;
+    croak "not enough arguments" if @_ < 2;
     
     my $self = ref $_[-1] eq 'HASH' ? pop @_ : {};
     $self->{encrypt_hash} ||= 'crypt';
@@ -191,7 +191,7 @@ David Kamholz C<dkamholz@cpan.org>
 
 Yuval Kogman
 
-=head1 COPYRIGHT & LICNESE
+=head1 COPYRIGHT & LICENSE
 
 	Copyright (c) 2005 the aforementioned authors. All rights
 	reserved. This program is free software; you can redistribute

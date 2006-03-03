@@ -1,8 +1,8 @@
 ---
 name: Authen-Htpasswd
-version: 0.13
+version: 0.14
 author:
-  - David Kamholz <davekam at pobox dot com>
+  - 'David Kamholz <dkamholz@cpan.org>'
 abstract: interface to read and modify Apache .htpasswd files
 license: perl
 requires:
@@ -15,7 +15,7 @@ recommends:
 provides:
   Authen::Htpasswd:
     file: lib/Authen/Htpasswd.pm
-    version: 0.13
+    version: 0.14
   Authen::Htpasswd::User:
     file: lib/Authen/Htpasswd/User.pm
   Authen::Htpasswd::Util:
