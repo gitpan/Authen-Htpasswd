@@ -1,6 +1,6 @@
 #!/perl
 
-use Test::More tests => 26;
+use Test::More tests => 28;
 
 use strict;
 use warnings;
@@ -55,4 +55,9 @@ is( $user->username, 'fred', 'user has correct username');
 ok( $user->check_password('orange'), 'user has correct password');
 is(scalar @{$user->extra_info}, 2, 'extra info has two fields');
 
+eval { $user->password() };
+ok($@, 'password with no args dies');
+ok($user->check_password('orange'), 'user still has correct password');
+
 unlink 't/data/temp.txt';
+

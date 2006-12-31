@@ -1,3 +1,7 @@
+0.15	Sun Dec 31 02:51:35 EST 2006
+    - prevent User::password() from clobbering the password if none is passed
+    - document Util::supported_hashes()
+
 0.14    Fri Mar 03 08:01:32 CET 2006
     - add all_users method
 

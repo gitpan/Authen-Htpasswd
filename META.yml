@@ -1,10 +1,12 @@
 ---
 name: Authen-Htpasswd
-version: 0.14
+version: 0.15
 author:
   - 'David Kamholz <dkamholz@cpan.org>'
 abstract: interface to read and modify Apache .htpasswd files
 license: perl
+resources:
+  license: http://dev.perl.org/licenses/
 requires:
   Class::Accessor::Fast: 0
   Digest: 0
@@ -15,9 +17,12 @@ recommends:
 provides:
   Authen::Htpasswd:
     file: lib/Authen/Htpasswd.pm
-    version: 0.14
+    version: 0.15
   Authen::Htpasswd::User:
     file: lib/Authen/Htpasswd/User.pm
   Authen::Htpasswd::Util:
     file: lib/Authen/Htpasswd/Util.pm
-generated_by: Module::Build version 0.2611
+generated_by: Module::Build version 0.2806
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.2.html
+  version: 1.2

@@ -5,7 +5,7 @@ use Carp;
 use Authen::Htpasswd;
 use Authen::Htpasswd::Util;
 
-use overload '""' => \&to_line;
+use overload '""' => \&to_line, bool => sub { 1 }, fallback => 1;
 
 __PACKAGE__->mk_accessors(qw/ file encrypt_hash check_hashes /);
 
@@ -61,7 +61,7 @@ sub new {
     
     my $self = ref $_[-1] eq 'HASH' ? pop @_ : {};
     $self->{encrypt_hash} ||= 'crypt';
-    $self->{check_hashes} ||= [ Authen::Htpasswd::Util::_supported_hashes() ];
+    $self->{check_hashes} ||= [ Authen::Htpasswd::Util::supported_hashes() ];
     $self->{autocommit} = 1;
 
     $self->{username} = $_[0];
@@ -132,12 +132,13 @@ sub extra_info {
     
     $userobj->password($newpass);
 
-Encrypts a new password.
+Encrypts a new password. Dies if C<$newpass> is not provided.
 
 =cut
 
 sub password {
     my ($self,$password) = @_;
+    croak "you must provide a new password" unless defined $password;
     $self->hashed_password( htpasswd_encrypt($self->encrypt_hash, $password) );
 }
 

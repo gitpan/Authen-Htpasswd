@@ -5,8 +5,8 @@ use Carp;
 use IO::LockedFile;
 use Authen::Htpasswd::User;
 
-our $VERSION = '0.14';
-my $SUFFIX = '.new';
+our $VERSION = '0.15';
+our $SUFFIX = '.new';
 
 __PACKAGE__->mk_accessors(qw/ file encrypt_hash check_hashes /);
 
@@ -79,7 +79,7 @@ sub new {
     }
     
     $self->{encrypt_hash} ||= 'crypt';        
-    $self->{check_hashes} ||= [ Authen::Htpasswd::Util::_supported_hashes() ];        
+    $self->{check_hashes} ||= [ Authen::Htpasswd::Util::supported_hashes() ];        
 
     bless $self, $class;
 }

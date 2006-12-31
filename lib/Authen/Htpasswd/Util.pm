@@ -2,7 +2,9 @@ package Authen::Htpasswd::Util;
 require Exporter;
 @ISA = qw/ Exporter /;
 @EXPORT = qw/ htpasswd_encrypt /;
+use strict;
 use Digest;
+use Carp;
 
 my @CRYPT_CHARS = split(//, './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz');
 
@@ -10,26 +12,35 @@ my @CRYPT_CHARS = split(//, './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklm
 
 Authen::Htpasswd::Util - performs encryption of supported .htpasswd formats
 
-=head1 SYNOPSIS
-
-    use Authen::Htpasswd::Util;
-    my $hash = 'md5'; # can be md5, sha1, crypt, or plain
-    my $hashed_pass = htpasswd_encrypt($hash,$password,$hashed_password); # exported by default
-
-=cut
+=head1 METHODS
 
 =head2 htpasswd_encrypt
+
+    htpasswd_encrypt($hash,$password,$hashed_password);
+
+Encrypts a cleartext $password given the specified $hash (valid values are C<md5>, C<sha1>, C<crypt>, or C<plain>).
+For C<crypt> and C<md5> it is sometimes necessary to pass the old encrypted password as $hashed_password 
+to be sure that the new one uses the correct salt. Exported by default.
 
 =cut
 
 sub htpasswd_encrypt {
     my ($hash,$password,$hashed_password) = @_;
     my $meth = __PACKAGE__->can("_hash_$hash");
-    Carp::croak "don't know how to handle $hash hash" unless $meth;
+    croak "don't know how to handle $hash hash" unless $meth;
     return &$meth($password,$hashed_password);
 }
 
-sub _supported_hashes {
+=head2 supported_hashes
+
+    my @hashes = Authen::Htpasswd::Util::supported_hashes();
+
+Returns an array of hash types available. C<crypt> and C<plain> are always available. C<sha1> is checked by
+attempting to load it via L<Digest>. C<md5> requires L<Crypt::PasswdMD5>.
+
+=cut
+
+sub supported_hashes {
     my @supported = qw/ crypt plain /;
     eval { Digest->new("SHA-1") };
     unshift @supported, 'sha1' unless $@;
@@ -56,7 +67,7 @@ sub _hash_md5 {
 }
 
 sub _hash_sha1 {
-    my ($password,$salt) = @_;
+    my ($password) = @_;
     my $sha1 = Digest->new("SHA-1");
     $sha1->add($password);
     return '{SHA}' . $sha1->b64digest . '=';
