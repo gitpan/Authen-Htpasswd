@@ -1,16 +1,20 @@
 #!/perl
 
+use strict;
+BEGIN {
+    $|  = 1;
+    $^W = 1;
+}
+
 use Test::More tests => 28;
 
-use strict;
-use warnings;
-
 use Authen::Htpasswd;
+use File::Spec::Functions;
 
 use File::Copy;
-copy('t/data/passwd.txt', 't/data/temp.txt') or die $!;
+copy(catfile(qw/t data passwd.txt/), catfile(qw/t data temp.txt/)) or die $!;
 
-my $file = Authen::Htpasswd->new('t/data/temp.txt');
+my $file = Authen::Htpasswd->new(catfile(qw/t data temp.txt/));
 
 ok( $file, 'object created successfully');
 
@@ -59,5 +63,5 @@ eval { $user->password() };
 ok($@, 'password with no args dies');
 ok($user->check_password('orange'), 'user still has correct password');
 
-unlink 't/data/temp.txt';
+unlink catfile(qw/t data temp.txt/);
 

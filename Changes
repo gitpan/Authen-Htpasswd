@@ -1,4 +1,11 @@
-0.15	Sun Dec 31 02:51:35 EST 2006
+0.16    Sun Jul 15 15:20:28 PDT 2007
+    - Disable write locking on Win32.
+      (On Win32 you cannot delete a file with an open filehandle)
+    - use File::Spec in tests to avoid build failure on Windows
+    - add Digest::SHA1 and Crypt::PasswdMD5 as dependencies rather than recommends
+      (still works without them if you don't need SHA or MD5 support)
+
+0.15    Sun Dec 31 02:51:35 EST 2006
     - prevent User::password() from clobbering the password if none is passed
     - document Util::supported_hashes()
 
@@ -11,8 +18,8 @@
     - added Yuval Kogman as author, also added license to POD
 
 0.12    November 10 2005
-	- extra_info is now an array, as suggested by Uwe Voelker
-	- changing the username will now delete the old username and add the new one
+    - extra_info is now an array, as suggested by Uwe Voelker
+    - changing the username will now delete the old username and add the new one
 
 0.11    November 09 2005
     - implement locking with IO::LockedFile

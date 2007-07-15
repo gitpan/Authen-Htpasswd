@@ -1,10 +1,14 @@
 package Authen::Htpasswd::Util;
-require Exporter;
-@ISA = qw/ Exporter /;
-@EXPORT = qw/ htpasswd_encrypt /;
 use strict;
 use Digest;
 use Carp;
+
+use vars qw{@ISA @EXPORT};
+BEGIN {
+    require Exporter;
+    @ISA = qw/ Exporter /;
+    @EXPORT = qw/ htpasswd_encrypt /;
+}
 
 my @CRYPT_CHARS = split(//, './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz');
 
@@ -81,9 +85,10 @@ Yuval Kogman
 
 =head1 COPYRIGHT & LICENSE
 
-	Copyright (c) 2005 the aforementioned authors. All rights
-	reserved. This program is free software; you can redistribute
-	it and/or modify it under the same terms as Perl itself.
+    Copyright (c) 2005 - 2007 the aforementioned authors.
+    
+    This program is free software; you can redistribute
+    it and/or modify it under the same terms as Perl itself.
 
 =cut
 

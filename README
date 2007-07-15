@@ -3,22 +3,22 @@ NAME
 
 SYNOPSIS
         my $pwfile = Authen::Htpasswd->new('user.txt', { encrypt_hash => 'md5' });
-        
-    # authenticate a user (checks all hash methods by default)
+    
+        # authenticate a user (checks all hash methods by default)
         if ($pwfile->check_user_password('bob', 'foo')) { ... }
-        
-    # modify the file (writes immediately)
+    
+        # modify the file (writes immediately)
         $pwfile->update_user('bob', $password, $info);
         $pwfile->add_user('jim', $password);
         $pwfile->delete_user('jim');
-        
-    # get user objects tied to a file
+    
+        # get user objects tied to a file
         my $user = $pwfile->lookup_user('bob');
         if ($user->check_password('vroom', [qw/ md5 sha1 /])) { ... } # only use secure hashes
         $user->password('foo'); # writes to file
         $user->set(password => 'bar', extra_info => 'editor'); # change more than one thing at once
-        
-    # or manage the file yourself
+    
+        # or manage the file yourself
         my $user = Authen::Htpasswd::User->new('bill', { hashed_password => 'iQ.IuWbUIhlPE' });
         my $user = Authen::Htpasswd::User->new('bill', 'bar', 'staff', { encrypt_hash => 'crypt' });
         print PASSWD $user->to_line, "\n";

@@ -1,28 +1,18 @@
----
-name: Authen-Htpasswd
-version: 0.15
-author:
-  - 'David Kamholz <dkamholz@cpan.org>'
-abstract: interface to read and modify Apache .htpasswd files
-license: perl
-resources:
-  license: http://dev.perl.org/licenses/
-requires:
-  Class::Accessor::Fast: 0
-  Digest: 0
-  IO::LockedFile: 0
-recommends:
-  Crypt::PasswdMD5: 0
-  Digest::SHA1: 0
-provides:
-  Authen::Htpasswd:
-    file: lib/Authen/Htpasswd.pm
-    version: 0.15
-  Authen::Htpasswd::User:
-    file: lib/Authen/Htpasswd/User.pm
-  Authen::Htpasswd::Util:
-    file: lib/Authen/Htpasswd/Util.pm
-generated_by: Module::Build version 0.2806
+--- #YAML:1.0
+name:                Authen-Htpasswd
+version:             0.16
+abstract:            Interface to read and modify Apache .htpasswd files
+license:             perl
+generated_by:        ExtUtils::MakeMaker version 6.36
+distribution_type:   module
+requires:     
+    Class::Accessor::Fast:         0
+    Crypt::PasswdMD5:              0
+    Digest:                        0
+    Digest::SHA1:                  0
+    IO::LockedFile:                0
 meta-spec:
-  url: http://module-build.sourceforge.net/META-spec-v1.2.html
-  version: 1.2
+    url:     http://module-build.sourceforge.net/META-spec-v1.2.html
+    version: 1.2
+author:
+    - David Kamholz <dkamholz@cpan.org>

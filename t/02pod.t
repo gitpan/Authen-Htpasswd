@@ -1,3 +1,11 @@
+#!perl
+
+use strict;
+BEGIN {
+    $|  = 1;
+    $^W = 1;
+}
+
 use Test::More;
 
 eval "use Test::Pod 1.14";

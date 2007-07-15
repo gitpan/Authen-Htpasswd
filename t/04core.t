@@ -1,12 +1,17 @@
 #!/perl
 
+use strict;
+BEGIN {
+    $|  = 1;
+    $^W = 1;
+}
+
 use Test::More tests => 13;
 
-use strict;
-use warnings;
 use Authen::Htpasswd;
+use File::Spec::Functions;
 
-my $file = Authen::Htpasswd->new('t/data/passwd.txt');
+my $file = Authen::Htpasswd->new(catfile(qw/t data passwd.txt/));
 
 ok( $file, 'object created successfully');
 

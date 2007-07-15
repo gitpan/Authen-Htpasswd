@@ -1,12 +1,17 @@
 package Authen::Htpasswd;
+use 5.005;
 use strict;
 use base 'Class::Accessor::Fast';
 use Carp;
+use IO::File;
 use IO::LockedFile;
 use Authen::Htpasswd::User;
 
-our $VERSION = '0.15';
-our $SUFFIX = '.new';
+use vars qw{$VERSION $SUFFIX};
+BEGIN {
+    $VERSION = '0.16';
+    $SUFFIX = '.new';
+}
 
 __PACKAGE__->mk_accessors(qw/ file encrypt_hash check_hashes /);
 
@@ -39,10 +44,14 @@ Authen::Htpasswd - interface to read and modify Apache .htpasswd files
 
 =head1 DESCRIPTION
 
-This module provides a convenient, object-oriented interface to Apache-style F<.htpasswd> files.
-It supports passwords encrypted via MD5, SHA1, and crypt, as well as plain (cleartext) passwords.
-It requires L<Crypt::PasswdMD5> for MD5 and L<Digest::SHA1> for SHA1. Additional fields after
-username and password, if present, are accessible via the C<extra_info> array.
+This module provides a convenient, object-oriented interface to Apache-style
+F<.htpasswd> files.
+
+It supports passwords encrypted via MD5, SHA1, and crypt, as well as plain
+(cleartext) passwords.
+
+Additional fields after username and password, if present, are accessible via
+the C<extra_info> array.
 
 =head1 METHODS
 
@@ -70,7 +79,7 @@ given. Default is C<md5>, C<sha1>, C<crypt>, C<plain>.
 
 sub new {
     my $class = shift;
-    my $self = ref $_[-1] eq 'HASH' ? pop @_ : {};
+    my $self  = ref $_[-1] eq 'HASH' ? pop @_ : {};
     $self->{file} = $_[0] if $_[0];
     croak "no file specified" unless $self->{file};
     if (!-e $self->{file}) {
@@ -79,8 +88,15 @@ sub new {
     }
     
     $self->{encrypt_hash} ||= 'crypt';        
-    $self->{check_hashes} ||= [ Authen::Htpasswd::Util::supported_hashes() ];        
-
+    $self->{check_hashes} ||= [ Authen::Htpasswd::Util::supported_hashes() ];
+    unless ( defined $self->{write_locking} ) {
+        if ( $^O eq 'MSWin32' or $^O eq 'cygwin' ) {
+            $self->{write_locking} = 0;
+        } else {
+            $self->{write_locking} = 1;
+        }
+    }
+    
     bless $self, $class;
 }
 
@@ -100,14 +116,16 @@ sub lookup_user {
         chomp $line;
         my ($username,$hashed_password,@extra_info) = split /:/, $line;
         if ($username eq $search_username) {
+            $file->close or die $!;
             return Authen::Htpasswd::User->new($username,undef,@extra_info, {
-                    file => $self, 
+                    file            => $self, 
                     hashed_password => $hashed_password,
-                    encrypt_hash => $self->encrypt_hash, 
-                    check_hashes => $self->check_hashes 
+                    encrypt_hash    => $self->encrypt_hash, 
+                    check_hashes    => $self->check_hashes 
                 });
         }
     }
+    $file->close or die $!;
     return undef;
 }
 
@@ -132,6 +150,7 @@ sub all_users {
                 check_hashes => $self->check_hashes 
             }));
     }
+    $file->close or die $!;
     return @users;
 }
 
@@ -173,13 +192,13 @@ sub update_user {
             chomp $line;
             my (undef,undef,@extra_info) = split /:/, $line;
             $user->{extra_info} ||= [ @extra_info ] if scalar @extra_info;
-            print $new $user->to_line, "\n";
+            $self->_print( $new, $user->to_line . "\n" );
             $seen++;
         } else {
-            print $new $line;
+            $self->_print( $new, $line );
         }
     }
-    print $new $user->to_line, "\n" unless $seen;
+    $self->_print( $new, $user->to_line . "\n" ) unless $seen;
     $self->_finish_rewrite($old,$new);
 }
 
@@ -204,9 +223,9 @@ sub add_user {
             $self->_abort_rewrite;
             croak "user $username already exists in " . $self->file . "!";
         }
-        print $new $line;
+        $self->_print( $new, $line );
     }
-    print $new $user->to_line, "\n";
+    $self->_print( $new, $user->to_line . "\n" );
     $self->_finish_rewrite($old,$new);
 }
 
@@ -226,9 +245,18 @@ sub delete_user {
     my ($old,$new) = $self->_start_rewrite;
     while (defined(my $line = <$old>)) {
         next if $line =~ /^\Q$username\:/;
-        print $new $line;
+        $self->_print( $new, $line );
     }
     $self->_finish_rewrite($old,$new);
+}
+
+sub _print {
+    my ($self,$new,$string) = @_;
+    if ( $self->{write_locking} ) {
+        print $new $string;
+    } else {
+        $$new .= $string;
+    }
 }
 
 sub _get_user {
@@ -242,23 +270,40 @@ sub _get_user {
 
 sub _start_rewrite {
     my $self = shift;
-    my $old = IO::LockedFile->new($self->file, 'r+') or die $!;
-    my $new = IO::File->new($self->file . $SUFFIX, 'w') or die $!;
-    return ($old,$new);
+    if ( $self->{write_locking} ) {
+        my $old = IO::LockedFile->new($self->file, 'r+') or die $!;
+        my $new = IO::File->new($self->file . $SUFFIX, 'w') or die $!;
+        return ($old,$new);
+    } else {
+        my $old = IO::File->new( $self->file, 'r' ) or die $!;
+        my $new = "";
+        return ($old, \$new);
+    }
 }
 
 sub _finish_rewrite {
     my ($self,$old,$new) = @_;
-    $new->close or die $!;
-    rename $self->file . $SUFFIX, $self->file or die $!;
-    $old->close or die $!;
+    if ( $self->{write_locking} ) {
+        $new->close or die $!;
+        rename $self->file . $SUFFIX, $self->file or die $!;
+        $old->close or die $!;
+    } else {
+        $old->close or die $!;
+        $old = IO::File->new( $self->file, 'w' ) or die $!;
+        print $old $$new;
+        $old->close or die $!;
+    }
 }
 
 sub _abort_rewrite {
     my ($self,$old,$new) = @_;
-    $new->close;
-    $old->close;
-    unlink $self->file . $SUFFIX;    
+    if ( $self->{write_locking} ) {
+      $new->close;
+      $old->close;
+      unlink $self->file . $SUFFIX;
+    } else {
+      $old->close;
+    }
 }
 
 =head1 AUTHOR
@@ -273,9 +318,10 @@ L<Apache::Htpasswd>.
 
 =head1 COPYRIGHT & LICENSE
 
-	Copyright (c) 2005 the aforementioned authors. All rights
-	reserved. This program is free software; you can redistribute
-	it and/or modify it under the same terms as Perl itself.
+    Copyright (c) 2005 - 2007 the aforementioned authors.
+        
+    This program is free software; you can redistribute
+    it and/or modify it under the same terms as Perl itself.
 
 =cut
 
