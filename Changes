@@ -1,3 +1,7 @@
+0.161   Sun Oct 12 12:13:27 PDT 2008
+    - fix stupid bug when trying to add a user that already exists (RT #37785)
+    - fix \Q in regular expressions for newer versions of perl (RT #27012)
+
 0.16    Sun Jul 15 15:20:28 PDT 2007
     - Disable write locking on Win32.
       (On Win32 you cannot delete a file with an open filehandle)

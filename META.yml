@@ -1,18 +1,24 @@
 --- #YAML:1.0
-name:                Authen-Htpasswd
-version:             0.16
-abstract:            Interface to read and modify Apache .htpasswd files
-license:             perl
-generated_by:        ExtUtils::MakeMaker version 6.36
-distribution_type:   module
-requires:     
-    Class::Accessor::Fast:         0
-    Crypt::PasswdMD5:              0
-    Digest:                        0
-    Digest::SHA1:                  0
-    IO::LockedFile:                0
-meta-spec:
-    url:     http://module-build.sourceforge.net/META-spec-v1.2.html
-    version: 1.2
+name:               Authen-Htpasswd
+version:            0.161
+abstract:           Interface to read and modify Apache .htpasswd files
 author:
     - David Kamholz <dkamholz@cpan.org>
+license:            perl
+distribution_type:  module
+configure_requires:
+    ExtUtils::MakeMaker:  0
+requires:
+    Class::Accessor::Fast:  0
+    Crypt::PasswdMD5:     0
+    Digest:               0
+    Digest::SHA1:         0
+    IO::LockedFile:       0
+no_index:
+    directory:
+        - t
+        - inc
+generated_by:       ExtUtils::MakeMaker version 6.46
+meta-spec:
+    url:      http://module-build.sourceforge.net/META-spec-v1.4.html
+    version:  1.4

@@ -9,7 +9,7 @@ use Authen::Htpasswd::User;
 
 use vars qw{$VERSION $SUFFIX};
 BEGIN {
-    $VERSION = '0.16';
+    $VERSION = '0.161';
     $SUFFIX = '.new';
 }
 
@@ -188,7 +188,7 @@ sub update_user {
     my ($old,$new) = $self->_start_rewrite;
     my $seen = 0;
     while (defined(my $line = <$old>)) {
-        if ($line =~ /^\Q$username\:/) {
+        if ($line =~ /^\Q$username\E:/) {
             chomp $line;
             my (undef,undef,@extra_info) = split /:/, $line;
             $user->{extra_info} ||= [ @extra_info ] if scalar @extra_info;
@@ -219,8 +219,8 @@ sub add_user {
 
     my ($old,$new) = $self->_start_rewrite;
     while (defined(my $line = <$old>)) {
-        if ($line =~ /^\Q$username\:/) {
-            $self->_abort_rewrite;
+        if ($line =~ /^\Q$username\E:/) {
+            $self->_abort_rewrite($old,$new);
             croak "user $username already exists in " . $self->file . "!";
         }
         $self->_print( $new, $line );
@@ -244,7 +244,7 @@ sub delete_user {
 
     my ($old,$new) = $self->_start_rewrite;
     while (defined(my $line = <$old>)) {
-        next if $line =~ /^\Q$username\:/;
+        next if $line =~ /^\Q$username\E:/;
         $self->_print( $new, $line );
     }
     $self->_finish_rewrite($old,$new);
