@@ -16,6 +16,7 @@ WriteMakefile(
          'Digest'                => 0,
          'Digest::SHA1'          => 0,
          'Crypt::PasswdMD5'      => 0,
+         'Scalar::Util'          => 0,
     },
 
 );

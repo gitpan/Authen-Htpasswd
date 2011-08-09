@@ -1,3 +1,6 @@
+0.170  Tue Aug 09 12:17:00 BST 2011
+    - fix user inflation code to handle arbitrary usernames
+
 0.161   Sun Oct 12 12:13:27 PDT 2008
     - fix stupid bug when trying to add a user that already exists (RT #37785)
     - fix \Q in regular expressions for newer versions of perl (RT #27012)

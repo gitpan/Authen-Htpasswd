@@ -18,15 +18,18 @@ my $file = Authen::Htpasswd->new(catfile(qw/t data temp.txt/));
 
 ok( $file, 'object created successfully');
 
-ok( $file->add_user(qw/ jim frobnicate /), 'new user created' );
-ok( $file->check_user_password(qw/ jim frobnicate /), 'new user verified' );
+# we need to have a user with a name that isn't a valid perl package to
+# avoid hiding a bug where we call $_[0]->isa on the username.
+
+ok( $file->add_user(qw/ 3jim frobnicate /), 'new user created' );
+ok( $file->check_user_password(qw/ 3jim frobnicate /), 'new user verified' );
 
 ok( $file->update_user(qw/ fred frobble /), 'user updated' );
 ok( $file->check_user_password(qw/ fred frobble /), 'updated user verified' );
 ok( !$file->check_user_password(qw/ fred fribble /), 'old password invalid' );
 
-ok( $file->delete_user('jim'), 'deleted user' );
-eval { $file->check_user_password(qw/ jim frobnicate /) };
+ok( $file->delete_user('3jim'), 'deleted user' );
+eval { $file->check_user_password(qw/ 3jim frobnicate /) };
 ok( $@, 'deleted user not found' );
 
 my $user = $file->lookup_user('bob');

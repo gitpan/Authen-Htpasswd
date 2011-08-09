@@ -6,12 +6,13 @@ use Carp;
 use IO::File;
 use IO::LockedFile;
 use Authen::Htpasswd::User;
+use Scalar::Util qw(blessed);
 
 use vars qw{$VERSION $SUFFIX};
-BEGIN {
-    $VERSION = '0.161';
-    $SUFFIX = '.new';
-}
+
+$VERSION = '0.170';
+$VERSION = eval $VERSION;
+$SUFFIX = '.new';
 
 __PACKAGE__->mk_accessors(qw/ file encrypt_hash check_hashes /);
 
@@ -240,7 +241,7 @@ Removes a user entry from the file.
 
 sub delete_user {
     my $self = shift;
-    my $username = $_[0]->isa('Authen::Htpasswd::User') ? $_[0]->username : $_[0];
+    my $username = blessed($_[0]) && $_[0]->isa('Authen::Htpasswd::User') ? $_[0]->username : $_[0];
 
     my ($old,$new) = $self->_start_rewrite;
     while (defined(my $line = <$old>)) {
@@ -261,7 +262,7 @@ sub _print {
 
 sub _get_user {
     my $self = shift;
-    return $_[0] if $_[0]->isa('Authen::Htpasswd::User');
+    return $_[0] if blessed($_[0]) && $_[0]->isa('Authen::Htpasswd::User');
     my $attr = ref $_[-1] eq 'HASH' ? pop @_ : {};
     $attr->{encrypt_hash} ||= $self->encrypt_hash;
     $attr->{check_hashes} ||= $self->check_hashes;
