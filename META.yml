@@ -24,4 +24,4 @@ requires:
   Digest::SHA1: 0
   IO::LockedFile: 0
   Scalar::Util: 0
-version: 0.170
+version: 0.171

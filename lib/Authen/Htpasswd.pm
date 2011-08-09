@@ -10,7 +10,7 @@ use Scalar::Util qw(blessed);
 
 use vars qw{$VERSION $SUFFIX};
 
-$VERSION = '0.170';
+$VERSION = '0.171';
 $VERSION = eval $VERSION;
 $SUFFIX = '.new';
 

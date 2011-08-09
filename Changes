@@ -1,3 +1,6 @@
+0.171  Tue Aug 09 13:09:00 BST 2011
+    - re-disting because I failed to notice MYMETA.* in the dist
+
 0.170  Tue Aug 09 12:17:00 BST 2011
     - fix user inflation code to handle arbitrary usernames
 
